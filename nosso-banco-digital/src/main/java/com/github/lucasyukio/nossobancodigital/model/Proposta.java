@@ -19,10 +19,10 @@ public class Proposta {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private long id;
 	
-	@NotNull(message = "Obrigatório o status de aceita ou não aceita")
+	@NotNull(message = "Status de aceita é obrigatório")
 	private boolean aceita;
 	
-	@NotNull(message = "Obrigatório o status de liberada ou não liberada")
+	@NotNull(message = "Status de liberada é obrigatório")
 	private boolean liberada;
 	
 	@OneToOne(mappedBy = "proposta")

@@ -9,6 +9,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import com.github.lucasyukio.nossobancodigital.dto.ClienteDTO;
 import com.github.lucasyukio.nossobancodigital.model.Cliente;
+import com.github.lucasyukio.nossobancodigital.model.Conta;
 import com.github.lucasyukio.nossobancodigital.model.DocumentoFoto;
 import com.github.lucasyukio.nossobancodigital.model.Endereco;
 import com.github.lucasyukio.nossobancodigital.model.Proposta;
@@ -19,7 +20,7 @@ public class ClienteServiceImpl implements ClienteService {
 	
 	@Autowired
 	ClienteRepository clienteRepository;
-
+	
 	@Override
 	public Cliente salvarCliente(ClienteDTO cliente) {
 		Cliente clienteNovo = new Cliente();
@@ -68,13 +69,19 @@ public class ClienteServiceImpl implements ClienteService {
 	}
 	
 	@Override
-	public Cliente buscarClientePorId(Long id) {
+	public Cliente atualizarContaCliente(Cliente cliente, Conta conta) {
+		cliente.setConta(conta);
+		
+		clienteRepository.save(cliente);
+		
+		return cliente;
+	}
+	
+	@Override
+	public Cliente buscarClientePorId(long id) {
 		Optional<Cliente> clienteOpt = clienteRepository.findById(id);
 		
-		if (clienteOpt.isPresent())
-			return clienteOpt.get();
-		else
-			throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Cliente não encontrado");
+		return clienteOpt.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Cliente não encontrado"));
 	}
 
 }

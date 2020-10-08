@@ -18,7 +18,7 @@ public class EnderecoServiceImpl implements EnderecoService {
 	ClienteService clienteService;
 	
 	@Override
-	public Endereco salvarEndereco(Long clienteId, EnderecoDTO endereco) {
+	public Endereco salvarEndereco(long clienteId, EnderecoDTO endereco) {
 		Cliente cliente = clienteService.buscarClientePorId(clienteId);
 		Endereco enderecoNovo = new Endereco();
 		

@@ -4,7 +4,7 @@ import com.github.lucasyukio.nossobancodigital.model.Proposta;
 
 public interface PropostaService {
 	
-	Proposta salvarProposta(Long clienteId);
+	Proposta criarProposta(long clienteId);
 	
 	Proposta atualizarAceitarProposta(Proposta proposta, boolean aceita);
 	

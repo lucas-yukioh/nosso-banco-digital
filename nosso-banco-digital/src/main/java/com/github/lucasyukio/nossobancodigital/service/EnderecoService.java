@@ -5,6 +5,6 @@ import com.github.lucasyukio.nossobancodigital.model.Endereco;
 
 public interface EnderecoService {
 	
-	Endereco salvarEndereco(Long clienteId, EnderecoDTO endereco);
+	Endereco salvarEndereco(long clienteId, EnderecoDTO endereco);
 
 }

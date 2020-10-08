@@ -6,6 +6,6 @@ import com.github.lucasyukio.nossobancodigital.model.DocumentoFoto;
 
 public interface DocumentoFotoService {
 	
-	public DocumentoFoto salvarDocumentoFoto(Long clienteId, MultipartFile documentoFrente, MultipartFile documentoVerso);
+	public DocumentoFoto salvarDocumentoFoto(long clienteId, MultipartFile documentoFrente, MultipartFile documentoVerso);
 	
 }

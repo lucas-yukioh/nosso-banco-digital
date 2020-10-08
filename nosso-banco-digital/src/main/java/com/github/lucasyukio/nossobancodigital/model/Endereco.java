@@ -21,28 +21,28 @@ public class Endereco {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private long id;
 	
-	@NotBlank(message = "CEP não pode ser vazio")
+	@NotBlank(message = "CEP é obrigatório")
 	@Size(max = 8, message = "CEP não pode ser maior que 8 caracteres")
 	@CEP
 	private String cep;
 	
-	@NotBlank(message = "Rua não pode ser vazio")
+	@NotBlank(message = "Rua é obrigatório")
 	@Size(max = 250, message = "Rua não pode ser maior que 250 caracteres")
 	private String rua;
 	
-	@NotBlank(message = "Bairro não pode ser vazio")
+	@NotBlank(message = "Bairro é obrigatório")
 	@Size(max = 250, message = "Bairro não pode ser maior que 250 caracteres")
 	private String bairro;
 	
-	@NotBlank(message = "Complemento não pode ser vazio")
+	@NotBlank(message = "Complemento é obrigatório")
 	@Size(max = 250, message = "Complemento não pode ser maior que 250 caracteres")
 	private String complemento;
 	
-	@NotBlank(message = "Cidade não pode ser vazio")
+	@NotBlank(message = "Cidade é obrigatório")
 	@Size(max = 250, message = "Cidade não pode ser maior que 250 caracteres")
 	private String cidade;
 	
-	@NotBlank(message = "Estado não pode ser vazio")
+	@NotBlank(message = "Estado é obrigatório")
 	@Size(max = 250, message = "Estado não pode ser maior que 250 caracteres")
 	private String estado;
 	

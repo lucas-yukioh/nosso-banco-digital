@@ -6,6 +6,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.mail.SimpleMailMessage;
+import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -20,10 +22,12 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import com.github.lucasyukio.nossobancodigital.dto.ClienteDTO;
 import com.github.lucasyukio.nossobancodigital.dto.EnderecoDTO;
 import com.github.lucasyukio.nossobancodigital.model.Cliente;
+import com.github.lucasyukio.nossobancodigital.model.Conta;
 import com.github.lucasyukio.nossobancodigital.model.DocumentoFoto;
 import com.github.lucasyukio.nossobancodigital.model.Endereco;
 import com.github.lucasyukio.nossobancodigital.model.Proposta;
 import com.github.lucasyukio.nossobancodigital.service.ClienteService;
+import com.github.lucasyukio.nossobancodigital.service.ContaService;
 import com.github.lucasyukio.nossobancodigital.service.DocumentoFotoService;
 import com.github.lucasyukio.nossobancodigital.service.EnderecoService;
 import com.github.lucasyukio.nossobancodigital.service.PropostaService;
@@ -44,9 +48,17 @@ public class ClienteController {
 	@Autowired
 	PropostaService propostaService;
 	
+	@Autowired
+	ContaService contaService;
+	
+	@Autowired
+	JavaMailSender mailSender;
+	
 	@PostMapping("/cliente")
 	public ResponseEntity<Cliente> salvarCliente(@RequestBody @Valid ClienteDTO cliente) {
 		Cliente clienteNovo = clienteService.salvarCliente(cliente);
+		
+		propostaService.criarProposta(clienteNovo.getId());
 		
 		String location = ServletUriComponentsBuilder
 							.fromCurrentRequest()
@@ -87,25 +99,38 @@ public class ClienteController {
 	@GetMapping("/cliente/{id}/proposta")
 	public Proposta exibirProposta(@PathVariable("id") long clienteId) {
 		Cliente cliente = clienteService.buscarClientePorId(clienteId);
-		Proposta proposta;
+		Proposta proposta = cliente.getProposta();
 		
 		if (cliente.getEndereco() == null || cliente.getDocumentoFoto() == null)
 			throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "Cliente não possui todos os dados necessários para proposta");
-		
-		if (cliente.getProposta() != null)
-			proposta = cliente.getProposta();
-		else
-			proposta = propostaService.salvarProposta(clienteId);
 		
 		return proposta;
 	}
 	
 	@PostMapping("/cliente/{id}/aceitar-proposta")
-	public void aceitarProposta(@PathVariable("id") long clienteId) {
+	public String aceitarProposta(@RequestParam("aceita") boolean aceita, @PathVariable("id") long clienteId) {
 		Cliente cliente = clienteService.buscarClientePorId(clienteId);
 		Proposta proposta = cliente.getProposta();
+		String resposta = "";
 		
-		propostaService.atualizarAceitarProposta(proposta, true);
+		SimpleMailMessage mensagem = new SimpleMailMessage();
+		mensagem.setFrom("email-veridico@banco-digital.com");
+		mensagem.setTo(cliente.getEmail());
+		
+		if (aceita) {
+			propostaService.atualizarAceitarProposta(proposta, true);
+			
+			mensagem.setSubject("Você aceitou a proposta!");
+			mensagem.setText("Agora não tem mais volta! :)");
+			
+			resposta = "Muito obrigado por aceitar a proposta! Sua conta será criada assim que seus documentos forem aprovados!";
+		}
+		else {
+			mensagem.setSubject("Por favor, aceite a proposta!");
+			mensagem.setText("Aceita ai, vai :(((");
+		}
+		
+		return resposta;
 	}
 	
 	@PostMapping("/cliente/{id}/liberar-proposta")
@@ -117,13 +142,10 @@ public class ClienteController {
 	}
 	
 	@PostMapping("/cliente/{id}/conta")
-	public void criarConta(@PathVariable("id") long clienteId) {
-		Cliente cliente = clienteService.buscarClientePorId(clienteId);
-		Proposta proposta = cliente.getProposta();
+	public ResponseEntity<Conta> criarConta(@PathVariable("id") long clienteId) {
+		Conta conta = contaService.criarConta(clienteId);
 		
-		if (proposta.isAceita() && proposta.isLiberada()) {
-			
-		}
+		return ResponseEntity.status(HttpStatus.CREATED).body(conta);
 	}
 
 }

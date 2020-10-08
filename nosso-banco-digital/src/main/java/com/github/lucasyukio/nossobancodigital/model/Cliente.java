@@ -16,37 +16,40 @@ import javax.validation.constraints.Size;
 import org.hibernate.validator.constraints.br.CPF;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.github.lucasyukio.nossobancodigital.validator.Idade;
 
 import lombok.Data;
 
 @Data
 @Entity
+@JsonInclude(Include.NON_NULL)
 public class Cliente {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private long id;
 	
-	@NotBlank(message = "Nome não pode ser vazio")
+	@NotBlank(message = "Nome é obrigatório")
 	@Size(max = 250, message = "Nome não pode ser maior que 250 caracteres")
 	private String nome;
 	
-	@NotBlank(message = "Sobrenome não pode ser vazio")
+	@NotBlank(message = "Sobrenome é obrigatório")
 	@Size(max = 250, message = "Sobrenome não pode ser maior que 250 caracteres")
 	private String sobrenome;
 	
-	@NotBlank(message = "Email não pode ser vazio")
+	@NotBlank(message = "Email é obrigatório")
 	@Size(max = 250, message = "Email não pode ser maior que 250 caracteres")
 	@Email(message = "Email inválido")
 	private String email;
 	
-	@NotBlank(message = "CPF não pode ser vazio")
+	@NotBlank(message = "CPF é obrigatório")
 	@Size(max = 11, message = "CPF não pode ser maior que 11 caracteres")
 	@CPF(message = "CPF inválido")
 	private String cpf;
 	
-	@NotNull(message = "Data de Nascimento não pode ser vazio")
+	@NotNull(message = "Data de Nascimento é obrigatório")
 	@Idade
 	private LocalDate dataNascimento;
 	
@@ -64,5 +67,10 @@ public class Cliente {
 	@JoinColumn(name = "proposta_id")
 	@JsonIgnoreProperties("cliente")
 	private Proposta proposta;
+	
+	@OneToOne
+	@JoinColumn(name = "conta_id")
+	@JsonIgnoreProperties("cliente")
+	private Conta conta;
 	
 }

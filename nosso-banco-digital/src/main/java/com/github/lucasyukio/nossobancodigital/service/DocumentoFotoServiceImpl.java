@@ -31,11 +31,15 @@ public class DocumentoFotoServiceImpl implements DocumentoFotoService {
 	private String uploadDir;
 	
 	@Override
-	public DocumentoFoto salvarDocumentoFoto(Long clienteId, MultipartFile documentoFrente, MultipartFile documentoVerso) {
+	public DocumentoFoto salvarDocumentoFoto(long clienteId, MultipartFile documentoFrente, MultipartFile documentoVerso) {
 		Cliente cliente = clienteService.buscarClientePorId(clienteId);
 		DocumentoFoto documentoFoto = new DocumentoFoto();
 		
-		if (cliente.getEndereco() != null) {
+		if (cliente.getProposta() == null)
+			throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Proposta não encontrada para cliente");
+		else if (cliente.getEndereco() == null)
+			throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "Cliente não possui endereço salvo");
+		else {
 			String originalNomeFrente = StringUtils.cleanPath(documentoFrente.getOriginalFilename());
 			String originalNomeVerso = StringUtils.cleanPath(documentoVerso.getOriginalFilename());
 			
@@ -62,8 +66,7 @@ public class DocumentoFotoServiceImpl implements DocumentoFotoService {
 			documentoFotoRepository.save(documentoFoto);
 			
 			clienteService.atualizarDocumentoFotoCliente(cliente, documentoFoto);
-		} else 
-			throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "Cliente não possui endereço salvo");
+		}
 		
 		return documentoFoto;
 	}
