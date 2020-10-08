@@ -1,5 +1,7 @@
 package com.github.lucasyukio.nossobancodigital.service;
 
+import java.util.Optional;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -19,29 +21,36 @@ public class PropostaServiceImpl implements PropostaService {
 	ClienteService clienteService;
 
 	@Override
-	public Proposta criarProposta(long clienteId) {
-		Cliente cliente = clienteService.buscarClientePorId(clienteId);
-		
+	public Proposta criarProposta() {
 		Proposta propostaNova = new Proposta();
 		
 		propostaNova.setAceita(false);
 		propostaNova.setLiberada(false);
-		propostaNova.setCliente(cliente);
 		
 		propostaRepository.save(propostaNova);
 		
-		clienteService.atualizarPropostaCliente(cliente, propostaNova);
-		
 		return propostaNova;
+	}
+	
+	@Override
+	public Proposta buscarPropostaPorId(long id) {
+		Optional<Proposta> propostaOpt = propostaRepository.findById(id);
+		
+		return propostaOpt.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Proposta não encontrada"));
+	}
+	
+	@Override
+	public Proposta atualizarClienteProposta(Proposta proposta, Cliente cliente) {
+		proposta.setCliente(cliente);
+		
+		propostaRepository.save(proposta);
+		
+		return proposta;
 	}
 
 	@Override
 	public Proposta atualizarAceitarProposta(Proposta proposta, boolean aceita) {
-		Cliente cliente = proposta.getCliente();
-		
-		if (cliente.getEndereco() == null || cliente.getDocumentoFoto() == null)
-			throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "Cliente não possui todos os dados para validar a proposta");
-		else if (proposta.isAceita())
+		if (proposta.isAceita())
 			throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "Proposta já foi aceita");
 		
 		proposta.setAceita(aceita);

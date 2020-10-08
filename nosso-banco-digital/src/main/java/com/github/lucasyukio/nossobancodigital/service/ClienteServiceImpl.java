@@ -21,22 +21,29 @@ public class ClienteServiceImpl implements ClienteService {
 	@Autowired
 	ClienteRepository clienteRepository;
 	
+	@Autowired
+	PropostaService propostaService;
+	
 	@Override
-	public Cliente salvarCliente(ClienteDTO cliente) {
+	public Cliente salvarCliente(ClienteDTO clienteDTO, long propostaId) {
 		Cliente clienteNovo = new Cliente();
+		Proposta proposta = propostaService.buscarPropostaPorId(propostaId);
 		
-		if (clienteRepository.findByCpf(cliente.getCpf()).isPresent())
+		if (clienteRepository.findByCpf(clienteDTO.getCpf()).isPresent())
 			throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "CPF já cadastrado no sistema");
-		else if (clienteRepository.findByEmail(cliente.getEmail()).isPresent())
+		else if (clienteRepository.findByEmail(clienteDTO.getEmail()).isPresent())
 			throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "Email já cadastrado no sistema");
 		
-		clienteNovo.setNome(cliente.getNome());
-		clienteNovo.setSobrenome(cliente.getSobrenome());
-		clienteNovo.setEmail(cliente.getEmail());
-		clienteNovo.setCpf(cliente.getCpf());
-		clienteNovo.setDataNascimento(cliente.getDataNascimento());
+		clienteNovo.setNome(clienteDTO.getNome());
+		clienteNovo.setSobrenome(clienteDTO.getSobrenome());
+		clienteNovo.setEmail(clienteDTO.getEmail());
+		clienteNovo.setCpf(clienteDTO.getCpf());
+		clienteNovo.setDataNascimento(clienteDTO.getDataNascimento());
+		clienteNovo.setProposta(proposta);
 		
 		clienteRepository.save(clienteNovo);
+		
+		propostaService.atualizarClienteProposta(proposta, clienteNovo);
 		
 		return clienteNovo;
 	}

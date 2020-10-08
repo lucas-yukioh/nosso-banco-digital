@@ -9,7 +9,7 @@ import com.github.lucasyukio.nossobancodigital.model.Proposta;
 
 public interface ClienteService {
 
-	Cliente salvarCliente(ClienteDTO cliente);
+	Cliente salvarCliente(ClienteDTO cliente, long propostaId);
 	
 	Cliente atualizarEnderecoCliente(Cliente cliente, Endereco endereco);
 	

@@ -18,16 +18,16 @@ public class EnderecoServiceImpl implements EnderecoService {
 	ClienteService clienteService;
 	
 	@Override
-	public Endereco salvarEndereco(long clienteId, EnderecoDTO endereco) {
+	public Endereco salvarEndereco(long clienteId, EnderecoDTO enderecoDTO) {
 		Cliente cliente = clienteService.buscarClientePorId(clienteId);
 		Endereco enderecoNovo = new Endereco();
 		
-		enderecoNovo.setCep(endereco.getCep());
-		enderecoNovo.setRua(endereco.getRua());
-		enderecoNovo.setBairro(endereco.getBairro());
-		enderecoNovo.setComplemento(endereco.getComplemento());
-		enderecoNovo.setCidade(endereco.getCidade());
-		enderecoNovo.setEstado(endereco.getEstado());
+		enderecoNovo.setCep(enderecoDTO.getCep());
+		enderecoNovo.setRua(enderecoDTO.getRua());
+		enderecoNovo.setBairro(enderecoDTO.getBairro());
+		enderecoNovo.setComplemento(enderecoDTO.getComplemento());
+		enderecoNovo.setCidade(enderecoDTO.getCidade());
+		enderecoNovo.setEstado(enderecoDTO.getEstado());
 		enderecoNovo.setCliente(cliente);
 		
 		enderecoRepository.save(enderecoNovo);

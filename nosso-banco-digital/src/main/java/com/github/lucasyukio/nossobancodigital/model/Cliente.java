@@ -54,6 +54,11 @@ public class Cliente {
 	private LocalDate dataNascimento;
 	
 	@OneToOne
+	@JoinColumn(name = "proposta_id")
+	@JsonIgnoreProperties("cliente")
+	private Proposta proposta;
+	
+	@OneToOne
 	@JoinColumn(name = "endereco_id")
 	@JsonIgnoreProperties("cliente")
 	private Endereco endereco;
@@ -62,11 +67,6 @@ public class Cliente {
 	@JoinColumn(name = "documento_foto_id")
 	@JsonIgnoreProperties("cliente")
 	private DocumentoFoto documentoFoto;
-	
-	@OneToOne
-	@JoinColumn(name = "proposta_id")
-	@JsonIgnoreProperties("cliente")
-	private Proposta proposta;
 	
 	@OneToOne
 	@JoinColumn(name = "conta_id")
