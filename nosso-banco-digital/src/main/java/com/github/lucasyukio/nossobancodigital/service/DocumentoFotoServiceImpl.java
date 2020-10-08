@@ -8,11 +8,9 @@ import java.nio.file.StandardCopyOption;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.server.ResponseStatusException;
 
 import com.github.lucasyukio.nossobancodigital.model.Cliente;
 import com.github.lucasyukio.nossobancodigital.model.DocumentoFoto;
@@ -31,42 +29,51 @@ public class DocumentoFotoServiceImpl implements DocumentoFotoService {
 	private String uploadDir;
 	
 	@Override
-	public DocumentoFoto salvarDocumentoFoto(long clienteId, MultipartFile documentoFrente, MultipartFile documentoVerso) {
+	public void criarDiretorio(long propostaId) {
+		try {
+			Path pathUpload = Paths.get(uploadDir + propostaId);
+			
+			if (!Files.exists(pathUpload))
+				Files.createDirectory(pathUpload);
+		} catch (IOException e) {
+			throw new RuntimeException("Não foi possível criar a pasta para os documentos");
+		}
+	}
+	
+	@Override
+	public DocumentoFoto salvarDocumentoFoto(long clienteId, MultipartFile docFrente, MultipartFile docVerso) {
 		Cliente cliente = clienteService.buscarClientePorId(clienteId);
 		DocumentoFoto documentoFoto = new DocumentoFoto();
 		
-		if (cliente.getProposta() == null)
-			throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Proposta não encontrada para cliente");
-		else if (cliente.getEndereco() == null)
-			throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "Cliente não possui endereço salvo");
-		else {
-			String originalNomeFrente = StringUtils.cleanPath(documentoFrente.getOriginalFilename());
-			String originalNomeVerso = StringUtils.cleanPath(documentoVerso.getOriginalFilename());
-			
-			String extensaoArqFrente = originalNomeFrente.substring(originalNomeFrente.lastIndexOf("."));
-			String extensaoArqVerso = originalNomeVerso.substring(originalNomeVerso.lastIndexOf("."));
-			
-			String nomeFrente = "cliente_id_" + clienteId + "_documento_frente" + extensaoArqFrente;
-			String nomeVerso = "cliente_id_" + clienteId + "_documento_verso" + extensaoArqVerso;
-			
-			Path uploadDirFrente = Paths.get(uploadDir).toAbsolutePath().normalize().resolve(nomeFrente);
-			Path uploadDirVerso = Paths.get(uploadDir).toAbsolutePath().normalize().resolve(nomeVerso);
-			
-			try {
-				Files.copy(documentoFrente.getInputStream(), uploadDirFrente, StandardCopyOption.REPLACE_EXISTING);
-				Files.copy(documentoVerso.getInputStream(), uploadDirVerso, StandardCopyOption.REPLACE_EXISTING);
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
+		Path pathUpload = Paths.get(uploadDir + cliente.getProposta().getId());
+		
+		String originalFrenteNome = StringUtils.cleanPath(docFrente.getOriginalFilename());
+		String originalVersoNome = StringUtils.cleanPath(docVerso.getOriginalFilename());
+		
+		String extensaoArqFrente = originalFrenteNome.substring(originalFrenteNome.lastIndexOf("."));
+		String extensaoArqVerso = originalVersoNome.substring(originalVersoNome.lastIndexOf("."));
+		
+		String docFrenteNome = "cliente_" + clienteId + "_documento_frente" + extensaoArqFrente;
+		String docFrenteVerso = "cliente_" + clienteId + "_documento_verso" + extensaoArqVerso;
+		
+		try {
+			Files.copy(docFrente.getInputStream(), pathUpload.resolve(docFrenteNome), StandardCopyOption.REPLACE_EXISTING);
+			Files.copy(docVerso.getInputStream(), pathUpload.resolve(docFrenteVerso), StandardCopyOption.REPLACE_EXISTING);
 			
 			documentoFoto.setCliente(cliente);
-			documentoFoto.setDocumentoFrente(nomeFrente);
-			documentoFoto.setDocumentoVerso(nomeVerso);
-			
-			documentoFotoRepository.save(documentoFoto);
-			
-			clienteService.atualizarDocumentoFotoCliente(cliente, documentoFoto);
+			documentoFoto.setDocFrenteNome(docFrenteNome);
+			documentoFoto.setDocFrenteTipo(docFrente.getContentType());
+			documentoFoto.setDocFrenteData(docFrente.getBytes());
+			documentoFoto.setDocVersoNome(docFrenteVerso);
+			documentoFoto.setDocVersoTipo(docVerso.getContentType());
+			documentoFoto.setDocVersoData(docVerso.getBytes());
+		} catch (IOException e) {
+			throw new RuntimeException("Erro ao salvar os documentos");
 		}
+		
+		documentoFotoRepository.save(documentoFoto);
+		
+		clienteService.atualizarDocumentoFotoCliente(cliente, documentoFoto);
 		
 		return documentoFoto;
 	}

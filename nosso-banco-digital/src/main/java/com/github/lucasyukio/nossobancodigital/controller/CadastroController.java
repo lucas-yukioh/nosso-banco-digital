@@ -3,6 +3,7 @@ package com.github.lucasyukio.nossobancodigital.controller;
 import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -11,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -53,6 +55,10 @@ public class CadastroController {
 	@PostMapping("/{id}/endereco")
 	public ResponseEntity<Endereco> salvarEndereco(@RequestBody @Valid EnderecoDTO enderecoDTO, @PathVariable("id") long propostaId, UriComponentsBuilder b) {
 		Proposta proposta = propostaService.buscarPropostaPorId(propostaId);
+		
+		if (proposta.getCliente() == null)
+			throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "Proposta não possui todos os dados do Cliente");
+		
 		Cliente cliente = proposta.getCliente();
 		Endereco enderecoNovo = enderecoService.salvarEndereco(cliente.getId(), enderecoDTO);
 		
@@ -62,12 +68,18 @@ public class CadastroController {
 	}
 	
 	@PostMapping("/{id}/documento")
-	public ResponseEntity<DocumentoFoto> salvarDocumento(@RequestParam("documentoFrente") MultipartFile documentoFrente, 
-														 @RequestParam("documentoVerso") MultipartFile documentoVerso, 
+	public ResponseEntity<DocumentoFoto> salvarDocumento(@RequestParam("documentoFrente") MultipartFile docFrente, 
+														 @RequestParam("documentoVerso") MultipartFile docVerso, 
 														 @PathVariable("id") long propostaId, UriComponentsBuilder b) {
 		Proposta proposta = propostaService.buscarPropostaPorId(propostaId);
+		
+		if (proposta.getCliente() == null || proposta.getCliente().getEndereco() == null)
+			throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "Proposta não possui todos os dados do Cliente");
+		
+		documentoFotoService.criarDiretorio(propostaId);
+		
 		Cliente cliente = proposta.getCliente();
-		DocumentoFoto documentoFotoNovo = documentoFotoService.salvarDocumentoFoto(cliente.getId(), documentoFrente, documentoVerso);
+		DocumentoFoto documentoFotoNovo = documentoFotoService.salvarDocumentoFoto(cliente.getId(), docFrente, docVerso);
 		
 		UriComponents uriComponents = b.path("/proposta/{id}").buildAndExpand(propostaId);
 		

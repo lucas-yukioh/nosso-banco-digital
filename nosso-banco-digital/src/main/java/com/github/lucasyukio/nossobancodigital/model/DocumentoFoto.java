@@ -4,9 +4,11 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.Lob;
 import javax.persistence.OneToOne;
 import javax.validation.constraints.NotBlank;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import lombok.Data;
@@ -20,10 +22,22 @@ public class DocumentoFoto {
 	private long id;
 	
 	@NotBlank(message = "Frente do Documento é obrigatório")
-	private String documentoFrente;
+	private String docFrenteNome;
+	
+	private String docFrenteTipo;
+	
+	@Lob
+	@JsonIgnore
+	private byte[] docFrenteData;
 	
 	@NotBlank(message = "Verso do Documento é obrigatório")
-	private String documentoVerso;
+	private String docVersoNome;
+	
+	private String docVersoTipo;
+	
+	@Lob
+	@JsonIgnore
+	private byte[] docVersoData;
 	
 	@OneToOne(mappedBy = "documentoFoto")
 	@JsonIgnoreProperties("documentoFoto")

@@ -16,6 +16,7 @@ import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import com.github.lucasyukio.nossobancodigital.message.ResponseMessage;
 import com.github.lucasyukio.nossobancodigital.model.Cliente;
 import com.github.lucasyukio.nossobancodigital.model.Proposta;
 import com.github.lucasyukio.nossobancodigital.service.ClienteService;
@@ -35,12 +36,15 @@ public class PropostaController {
 	JavaMailSender mailSender;
 	
 	@PostMapping
-	public ResponseEntity<?> criarProposta(UriComponentsBuilder b) {
+	public ResponseEntity<ResponseMessage> criarProposta(UriComponentsBuilder b) {
 		Proposta propostaNova = propostaService.criarProposta();
+		ResponseMessage response = new ResponseMessage();
+		
+		response.setMessage("Proposta criada com sucesso");
 		
 		UriComponents uriComponents = b.path("/cadastro/{id}/cliente").buildAndExpand(propostaNova.getId());
 		
-		return ResponseEntity.created(uriComponents.toUri()).build();
+		return ResponseEntity.created(uriComponents.toUri()).body(response);
 	}
 	
 	@GetMapping("/{id}")
@@ -54,14 +58,14 @@ public class PropostaController {
 	}
 	
 	@PostMapping("/{id}/aceitar-proposta")
-	public ResponseEntity<String> aceitarProposta(@RequestParam("aceita") boolean aceita, @PathVariable("id") long propostaId) {
+	public ResponseEntity<ResponseMessage> aceitarProposta(@RequestParam("aceita") boolean aceita, @PathVariable("id") long propostaId) {
 		Proposta proposta = propostaService.buscarPropostaPorId(propostaId);
+		ResponseMessage response = new ResponseMessage();
 		
 		if (propostaIncompleta(proposta))
 			throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "Proposta não possui todos os dados do Cliente");
 		
 		Cliente cliente = proposta.getCliente();
-		String resposta = "";
 		
 		SimpleMailMessage emailMessage = new SimpleMailMessage();
 		emailMessage.setFrom("email-veridico@banco-digital.com");
@@ -73,32 +77,37 @@ public class PropostaController {
 			emailMessage.setSubject("Você aceitou a proposta!");
 			emailMessage.setText("Agora não tem mais volta! :)");
 			
-			resposta = "Muito obrigado por aceitar a proposta! Sua conta será criada assim que seus documentos forem aprovados!";
+			response.setMessage("Muito obrigado por aceitar a proposta! Sua conta será criada assim que seus documentos forem aprovados!");
 		}
 		else {
 			emailMessage.setSubject("Por favor, aceite a proposta!");
 			emailMessage.setText("Aceita ai, vai :(((. Você pode acessar sua proposta através desse link: [inserir-link-da-proposta]");
+			
+			response.setMessage("Poxa, que pena, pensa mais um pouquinho e tenta de novo :(");
 		}
 		
 		mailSender.send(emailMessage);
 		
-		return ResponseEntity.ok(resposta);
+		return ResponseEntity.ok(response);
 	}
 	
 	@PostMapping("/{id}/liberar-proposta")
-	public ResponseEntity<?> liberarProposta(@PathVariable("id") long propostaId) {
+	public ResponseEntity<ResponseMessage> liberarProposta(@PathVariable("id") long propostaId) {
 		Proposta proposta = propostaService.buscarPropostaPorId(propostaId);
+		ResponseMessage response = new ResponseMessage();
 		
 		if (propostaIncompleta(proposta))
 			throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "Proposta não possui todos os dados do Cliente");
 		
 		propostaService.atualizarLiberarProposta(proposta, true);
 		
-		return ResponseEntity.ok().build();
+		response.setMessage("Proposta liberada com sucesso");
+		
+		return ResponseEntity.ok(response);
 	}
 	
 	@GetMapping("/{id}/emails")
-	public ResponseEntity<String> buscarEmails(@PathVariable("id") long propostaId) {
+	public ResponseEntity<Object> buscarEmails(@PathVariable("id") long propostaId) {
 		Proposta proposta = propostaService.buscarPropostaPorId(propostaId);
 		
 		if (propostaIncompleta(proposta))
@@ -107,7 +116,7 @@ public class PropostaController {
 		String uri = "https://api.smtpbucket.com/emails?sender=email-veridico@banco-digital.com&recipient=" + proposta.getCliente().getEmail();
 		
 		RestTemplate restTemplate = new RestTemplate();
-		String result = restTemplate.getForObject(uri, String.class);
+		Object result = restTemplate.getForObject(uri, Object.class);
 		
 		return ResponseEntity.status(HttpStatus.FOUND).body(result);
 	}
