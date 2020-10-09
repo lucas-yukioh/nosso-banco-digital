@@ -9,7 +9,6 @@ import org.springframework.web.server.ResponseStatusException;
 
 import com.github.lucasyukio.nossobancodigital.dto.ClienteDTO;
 import com.github.lucasyukio.nossobancodigital.model.Cliente;
-import com.github.lucasyukio.nossobancodigital.model.Conta;
 import com.github.lucasyukio.nossobancodigital.model.DocumentoFoto;
 import com.github.lucasyukio.nossobancodigital.model.Endereco;
 import com.github.lucasyukio.nossobancodigital.model.Proposta;
@@ -69,15 +68,6 @@ public class ClienteServiceImpl implements ClienteService {
 	@Override
 	public Cliente atualizarPropostaCliente(Cliente cliente, Proposta proposta) {
 		cliente.setProposta(proposta);
-		
-		clienteRepository.save(cliente);
-		
-		return cliente;
-	}
-	
-	@Override
-	public Cliente atualizarContaCliente(Cliente cliente, Conta conta) {
-		cliente.setConta(conta);
 		
 		clienteRepository.save(cliente);
 		

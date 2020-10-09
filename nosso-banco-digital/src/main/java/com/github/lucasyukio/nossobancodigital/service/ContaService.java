@@ -4,6 +4,6 @@ import com.github.lucasyukio.nossobancodigital.model.Conta;
 
 public interface ContaService {
 
-	Conta criarConta(long clienteId);
+	Conta criarConta(long propostaId);
 	
 }

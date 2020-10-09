@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.util.UriComponents;
@@ -18,6 +19,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import com.github.lucasyukio.nossobancodigital.dto.ClienteDTO;
 import com.github.lucasyukio.nossobancodigital.dto.EnderecoDTO;
+import com.github.lucasyukio.nossobancodigital.message.ResponseMessage;
 import com.github.lucasyukio.nossobancodigital.model.Cliente;
 import com.github.lucasyukio.nossobancodigital.model.DocumentoFoto;
 import com.github.lucasyukio.nossobancodigital.model.Endereco;
@@ -45,6 +47,11 @@ public class CadastroController {
 	
 	@PostMapping("/{id}/cliente")
 	public ResponseEntity<Cliente> salvarCliente(@RequestBody @Valid ClienteDTO clienteDTO, @PathVariable("id") long propostaId, UriComponentsBuilder b) {
+		Proposta proposta = propostaService.buscarPropostaPorId(propostaId);
+		
+		if (proposta.getCliente() != null)
+			throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "Proposta já possui Cliente cadastrado");
+		
 		Cliente clienteNovo = clienteService.salvarCliente(clienteDTO, propostaId);
 		
 		UriComponents uriComponents = b.path("/cadastro/{id}/endereco").buildAndExpand(propostaId);
@@ -60,6 +67,10 @@ public class CadastroController {
 			throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "Proposta não possui todos os dados do Cliente");
 		
 		Cliente cliente = proposta.getCliente();
+		
+		if (cliente.getEndereco() != null)
+			throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "Cliente já possui Endereço cadastrado");
+		
 		Endereco enderecoNovo = enderecoService.salvarEndereco(cliente.getId(), enderecoDTO);
 		
 		UriComponents uriComponents = b.path("/cadastro/{id}/documento").buildAndExpand(propostaId);
@@ -79,11 +90,38 @@ public class CadastroController {
 		documentoFotoService.criarDiretorio(propostaId);
 		
 		Cliente cliente = proposta.getCliente();
+		
+		if (cliente.getDocumentoFoto() != null)
+			throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "Cliente já possui DocumentoFoto cadastrado");
+		
 		DocumentoFoto documentoFotoNovo = documentoFotoService.salvarDocumentoFoto(cliente.getId(), docFrente, docVerso);
+		
+		if (!liberarDocumentoSistemaExterno(propostaId)) {
+			try {
+				Thread.sleep(5000);
+				liberarDocumentoSistemaExterno(propostaId);
+			} catch (InterruptedException e) {
+				Thread.currentThread().interrupt();
+			}
+		}
 		
 		UriComponents uriComponents = b.path("/proposta/{id}").buildAndExpand(propostaId);
 		
 		return ResponseEntity.created(uriComponents.toUri()).body(documentoFotoNovo);
+	}
+	
+	private boolean liberarDocumentoSistemaExterno(long propostaId) {
+		boolean liberado = false;
+		
+		String uri = "http://localhost:8080/proposta/" + propostaId + "/liberar-proposta";
+		
+		RestTemplate restTemplate = new RestTemplate();
+		ResponseEntity<ResponseMessage> result = restTemplate.postForEntity(uri, null, ResponseMessage.class);
+		
+		if (result.getStatusCode() == HttpStatus.OK)
+			liberado = true;
+		
+		return liberado;
 	}
 
 }

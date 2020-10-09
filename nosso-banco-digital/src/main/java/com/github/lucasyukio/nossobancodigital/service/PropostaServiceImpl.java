@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import com.github.lucasyukio.nossobancodigital.model.Cliente;
+import com.github.lucasyukio.nossobancodigital.model.Conta;
 import com.github.lucasyukio.nossobancodigital.model.Proposta;
 import com.github.lucasyukio.nossobancodigital.repository.PropostaRepository;
 
@@ -50,9 +51,6 @@ public class PropostaServiceImpl implements PropostaService {
 
 	@Override
 	public Proposta atualizarAceitarProposta(Proposta proposta, boolean aceita) {
-		if (proposta.isAceita())
-			throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "Proposta já foi aceita");
-		
 		proposta.setAceita(aceita);
 		
 		propostaRepository.save(proposta);
@@ -62,10 +60,16 @@ public class PropostaServiceImpl implements PropostaService {
 
 	@Override
 	public Proposta atualizarLiberarProposta(Proposta proposta, boolean liberada) {
-		if (proposta.isLiberada())
-			throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "Proposta já foi liberada");
-		
 		proposta.setLiberada(liberada);
+		
+		propostaRepository.save(proposta);
+		
+		return proposta;
+	}
+	
+	@Override
+	public Proposta atualizarContaProposta(Proposta proposta, Conta conta) {
+		proposta.setConta(conta);
 		
 		propostaRepository.save(proposta);
 		

@@ -68,9 +68,4 @@ public class Cliente {
 	@JsonIgnoreProperties("cliente")
 	private DocumentoFoto documentoFoto;
 	
-	@OneToOne
-	@JoinColumn(name = "conta_id")
-	@JsonIgnoreProperties("cliente")
-	private Conta conta;
-	
 }

@@ -5,7 +5,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.OneToOne;
-import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.Digits;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
@@ -19,20 +19,19 @@ public class Conta {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private long id;
 	
-	@NotBlank(message = "Agência é obrigatório")
+	@Digits(integer = 4, fraction = 0)
 	private int agencia;
 	
-	@NotBlank(message = "Conta é obrigatório")
+	@Digits(integer = 8, fraction = 0)
 	private int conta;
 	
-	@NotBlank(message = "Código do Banco é obrigatório")
+	@Digits(integer = 3, fraction = 0)
 	private int codBanco;
 	
-	@NotBlank(message = "Saldo é obrigatório")
 	private double saldo;
 	
 	@OneToOne(mappedBy = "conta")
 	@JsonIgnoreProperties("conta")
-	private Cliente cliente;
+	private Proposta proposta;
 
 }
