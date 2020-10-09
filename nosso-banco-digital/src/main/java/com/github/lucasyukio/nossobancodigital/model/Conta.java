@@ -1,5 +1,7 @@
 package com.github.lucasyukio.nossobancodigital.model;
 
+import java.util.Random;
+
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -33,5 +35,12 @@ public class Conta {
 	@OneToOne(mappedBy = "conta")
 	@JsonIgnoreProperties("conta")
 	private Proposta proposta;
+	
+	public Conta() {
+		agencia = 1000 + new Random().nextInt(9000);
+		conta = 10000000 + new Random().nextInt(90000000);
+		codBanco = 123;
+		saldo = 0.0;
+	}
 
 }

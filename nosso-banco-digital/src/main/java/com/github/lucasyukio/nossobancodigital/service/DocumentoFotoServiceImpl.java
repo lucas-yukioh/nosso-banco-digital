@@ -41,34 +41,25 @@ public class DocumentoFotoServiceImpl implements DocumentoFotoService {
 	}
 	
 	@Override
-	public DocumentoFoto salvarDocumentoFoto(long clienteId, MultipartFile docFrente, MultipartFile docVerso) {
+	public DocumentoFoto salvarDocumentoFoto(long clienteId, MultipartFile documentoFile) {
 		Cliente cliente = clienteService.buscarClientePorId(clienteId);
 		DocumentoFoto documentoFoto = new DocumentoFoto();
 		
 		Path pathUpload = Paths.get(uploadDir + cliente.getProposta().getId());
 		
-		String originalFrenteNome = StringUtils.cleanPath(docFrente.getOriginalFilename());
-		String originalVersoNome = StringUtils.cleanPath(docVerso.getOriginalFilename());
-		
-		String extensaoArqFrente = originalFrenteNome.substring(originalFrenteNome.lastIndexOf("."));
-		String extensaoArqVerso = originalVersoNome.substring(originalVersoNome.lastIndexOf("."));
-		
-		String docFrenteNome = "cliente_" + clienteId + "_documento_frente" + extensaoArqFrente;
-		String docFrenteVerso = "cliente_" + clienteId + "_documento_verso" + extensaoArqVerso;
+		String originalNome = StringUtils.cleanPath(documentoFile.getOriginalFilename());
+		String extensaoArq = originalNome.substring(originalNome.lastIndexOf("."));
+		String documentoNome = "cliente_" + clienteId + "_documento" + extensaoArq;
 		
 		try {
-			Files.copy(docFrente.getInputStream(), pathUpload.resolve(docFrenteNome), StandardCopyOption.REPLACE_EXISTING);
-			Files.copy(docVerso.getInputStream(), pathUpload.resolve(docFrenteVerso), StandardCopyOption.REPLACE_EXISTING);
+			Files.copy(documentoFile.getInputStream(), pathUpload.resolve(documentoNome), StandardCopyOption.REPLACE_EXISTING);
 			
 			documentoFoto.setCliente(cliente);
-			documentoFoto.setDocFrenteNome(docFrenteNome);
-			documentoFoto.setDocFrenteTipo(docFrente.getContentType());
-			documentoFoto.setDocFrenteData(docFrente.getBytes());
-			documentoFoto.setDocVersoNome(docFrenteVerso);
-			documentoFoto.setDocVersoTipo(docVerso.getContentType());
-			documentoFoto.setDocVersoData(docVerso.getBytes());
+			documentoFoto.setDocumentoNome(documentoNome);
+			documentoFoto.setDocumentoTipo(documentoFile.getContentType());
+			documentoFoto.setDocumentoData(documentoFile.getBytes());
 		} catch (IOException e) {
-			throw new RuntimeException("Erro ao salvar os documentos");
+			throw new RuntimeException("Erro ao salvar o documento");
 		}
 		
 		documentoFotoRepository.save(documentoFoto);

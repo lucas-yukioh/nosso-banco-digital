@@ -21,23 +21,14 @@ public class DocumentoFoto {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private long id;
 	
-	@NotBlank(message = "Frente do Documento é obrigatório")
-	private String docFrenteNome;
+	@NotBlank(message = "Nome do Documento é obrigatório")
+	private String documentoNome;
 	
-	private String docFrenteTipo;
-	
-	@Lob
-	@JsonIgnore
-	private byte[] docFrenteData;
-	
-	@NotBlank(message = "Verso do Documento é obrigatório")
-	private String docVersoNome;
-	
-	private String docVersoTipo;
+	private String documentoTipo;
 	
 	@Lob
 	@JsonIgnore
-	private byte[] docVersoData;
+	private byte[] documentoData;
 	
 	@OneToOne(mappedBy = "documentoFoto")
 	@JsonIgnoreProperties("documentoFoto")

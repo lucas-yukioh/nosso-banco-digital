@@ -8,6 +8,6 @@ public interface DocumentoFotoService {
 	
 	public void criarDiretorio(long propostaId);
 	
-	public DocumentoFoto salvarDocumentoFoto(long clienteId, MultipartFile docFrente, MultipartFile documentoVerso);
+	public DocumentoFoto salvarDocumentoFoto(long clienteId, MultipartFile documentoFile);
 	
 }

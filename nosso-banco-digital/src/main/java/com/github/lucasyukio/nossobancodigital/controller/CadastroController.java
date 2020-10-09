@@ -79,8 +79,7 @@ public class CadastroController {
 	}
 	
 	@PostMapping("/{id}/documento")
-	public ResponseEntity<DocumentoFoto> salvarDocumento(@RequestParam("documentoFrente") MultipartFile docFrente, 
-														 @RequestParam("documentoVerso") MultipartFile docVerso, 
+	public ResponseEntity<DocumentoFoto> salvarDocumento(@RequestParam("documento") MultipartFile documentoFile, 
 														 @PathVariable("id") long propostaId, UriComponentsBuilder b) {
 		Proposta proposta = propostaService.buscarPropostaPorId(propostaId);
 		
@@ -92,9 +91,9 @@ public class CadastroController {
 		Cliente cliente = proposta.getCliente();
 		
 		if (cliente.getDocumentoFoto() != null)
-			throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "Cliente já possui DocumentoFoto cadastrado");
+			throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "Cliente já possui Documento cadastrado");
 		
-		DocumentoFoto documentoFotoNovo = documentoFotoService.salvarDocumentoFoto(cliente.getId(), docFrente, docVerso);
+		DocumentoFoto documentoFotoNovo = documentoFotoService.salvarDocumentoFoto(cliente.getId(), documentoFile);
 		
 		if (!liberarDocumentoSistemaExterno(propostaId)) {
 			try {

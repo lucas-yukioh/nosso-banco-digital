@@ -18,4 +18,6 @@ public interface ClienteService {
 	
 	Cliente buscarClientePorId(long id);
 	
+	Cliente buscarClientePorCpfEEmail(String cpf, String email);
+	
 }

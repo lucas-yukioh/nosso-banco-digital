@@ -16,6 +16,7 @@ import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import com.github.lucasyukio.nossobancodigital.mailer.ContaMail;
 import com.github.lucasyukio.nossobancodigital.mailer.PropostaMail;
 import com.github.lucasyukio.nossobancodigital.message.ResponseMessage;
 import com.github.lucasyukio.nossobancodigital.model.Cliente;
@@ -139,7 +140,10 @@ public class PropostaController {
 		
 		Conta conta = contaService.criarConta(propostaId);
 		
-		return ResponseEntity.ok(conta);
+		SimpleMailMessage emailMessage = ContaMail.dadosContaMail(conta, proposta.getCliente().getEmail());
+		mailSender.send(emailMessage);
+		
+		return ResponseEntity.status(HttpStatus.CREATED).body(conta);
 	}
 	
 	private boolean propostaIncompleta(Proposta proposta) {

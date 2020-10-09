@@ -1,7 +1,5 @@
 package com.github.lucasyukio.nossobancodigital.service;
 
-import java.util.Random;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -23,16 +21,7 @@ public class ContaServiceImpl implements ContaService {
 		Proposta proposta = propostaService.buscarPropostaPorId(propostaId);
 		
 		Conta conta = new Conta();
-		Random random = new Random();
 		
-		int numAgencia = 1000 + random.nextInt(9000);
-		int numConta = 10000000 + random.nextInt(90000000);
-		int codBanco = 123;
-		
-		conta.setAgencia(numAgencia);
-		conta.setConta(numConta);
-		conta.setCodBanco(codBanco);
-		conta.setSaldo(0.0);
 		conta.setProposta(proposta);
 		
 		contaRepository.save(conta);

@@ -80,5 +80,12 @@ public class ClienteServiceImpl implements ClienteService {
 		
 		return clienteOpt.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Cliente não encontrado"));
 	}
+	
+	@Override
+	public Cliente buscarClientePorCpfEEmail(String cpf, String email) {
+		Optional<Cliente> clienteOpt = clienteRepository.findByCpfAndEmail(cpf, email);
+		
+		return clienteOpt.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Cliente não encontrado"));
+	}
 
 }
