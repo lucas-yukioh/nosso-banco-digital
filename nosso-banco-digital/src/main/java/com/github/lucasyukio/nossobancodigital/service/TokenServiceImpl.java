@@ -10,7 +10,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import com.github.lucasyukio.nossobancodigital.model.Cliente;
-import com.github.lucasyukio.nossobancodigital.model.Proposta;
 import com.github.lucasyukio.nossobancodigital.model.Token;
 import com.github.lucasyukio.nossobancodigital.repository.TokenRepository;
 
@@ -24,16 +23,20 @@ public class TokenServiceImpl implements TokenService {
 	ClienteService clienteService;
 	
 	@Autowired
-	PropostaService propostaService;
+	UsuarioService usuarioService;
 
 	@Override
 	public Token gerarToken(String cpf, String email) {
 		Cliente cliente = clienteService.buscarClientePorCpfEEmail(cpf, email);
-		Proposta proposta = propostaService.buscarPropostaCompletaAceitaLiberadaPorId(cliente.getProposta().getId());
 		
-		if (proposta.getConta() == null)
+		if (cliente.getProposta().getConta() == null)
 			throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "Proposta associada a esse Cliente não possui Conta cadastrada");
+		else if (usuarioService.buscarUsuarioPorCliente(cliente).isPresent())
+			throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "Cliente já possui Usuário cadastrado");
 		
+		if (tokenRepository.findByCliente(cliente).isPresent())
+			tokenRepository.delete(tokenRepository.findByCliente(cliente).get());
+			
 		Token tokenObj = new Token();
 		
 		int token = 100000 + new Random().nextInt(900000);
@@ -45,20 +48,6 @@ public class TokenServiceImpl implements TokenService {
 		tokenObj.setCliente(cliente);
 		
 		tokenRepository.save(tokenObj);
-		
-		return tokenObj;
-	}
-	
-	@Override
-	public Token buscarTokenValido(int token) {
-		Token tokenObj = buscarTokenPorToken(token);
-		
-		Calendar cal = Calendar.getInstance();
-		
-		if ((tokenObj.getDataExpiracao().getTime() - cal.getTime().getTime()) <= 0)
-			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Token expirado");
-		else if (tokenObj.isUsado())
-			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Token já foi utilizado");
 		
 		return tokenObj;
 	}
@@ -84,6 +73,19 @@ public class TokenServiceImpl implements TokenService {
 		tokenRepository.save(token);
 		
 		return token;
+	}
+	
+	@Override
+	public boolean validarToken(Token token) {
+		boolean valido = true;
+		Calendar cal = Calendar.getInstance();
+		
+		if ((token.getDataExpiracao().getTime() - cal.getTime().getTime()) <= 0)
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Token expirado");
+		else if (token.isUsado())
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Token já foi utilizado");
+		
+		return valido;
 	}
 
 }

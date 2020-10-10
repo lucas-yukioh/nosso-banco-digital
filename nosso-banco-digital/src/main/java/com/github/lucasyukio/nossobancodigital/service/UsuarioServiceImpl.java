@@ -1,5 +1,7 @@
 package com.github.lucasyukio.nossobancodigital.service;
 
+import java.util.Optional;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -30,7 +32,12 @@ public class UsuarioServiceImpl implements UsuarioService {
 	@Override
 	public Usuario criarUsuario(UsuarioDTO usuarioDTO) {
 		Cliente cliente = clienteService.buscarClientePorCpfEEmail(usuarioDTO.getCpf(), usuarioDTO.getEmail());
+		
+		if (buscarUsuarioPorCliente(cliente).isPresent())
+			throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "Cliente já possui Usuário cadastrado");
+		
 		Token token = tokenService.buscarTokenPorCliente(cliente);
+		tokenService.validarToken(token);
 		
 		if (token.getToken() != usuarioDTO.getToken())
 			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Token inválido");
@@ -45,6 +52,13 @@ public class UsuarioServiceImpl implements UsuarioService {
 		tokenService.atualizarUsadoToken(token, true);
 		
 		return usuario;
+	}
+	
+	@Override
+	public Optional<Usuario> buscarUsuarioPorCliente(Cliente cliente) {
+		Optional<Usuario> usuarioOpt = usuarioRepository.findByCliente(cliente);
+		
+		return usuarioOpt;
 	}
 
 }

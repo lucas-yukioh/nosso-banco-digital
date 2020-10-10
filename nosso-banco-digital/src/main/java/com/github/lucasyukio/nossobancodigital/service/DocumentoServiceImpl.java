@@ -47,7 +47,7 @@ public class DocumentoServiceImpl implements DocumentoService {
 	}
 	
 	@Override
-	public Documento salvarDocumentoFoto(long propostaId, MultipartFile documentoFile) {
+	public Documento salvarDocumento(long propostaId, MultipartFile documentoFile) {
 		Proposta proposta = propostaService.buscarPropostaPorId(propostaId);
 		Cliente cliente = proposta.getCliente();
 		
@@ -58,7 +58,7 @@ public class DocumentoServiceImpl implements DocumentoService {
 		
 		criarDiretorio(propostaId);
 		
-		Documento documentoFoto = new Documento();
+		Documento documento = new Documento();
 		
 		Path pathUpload = Paths.get(uploadDir + cliente.getProposta().getId());
 		
@@ -69,19 +69,19 @@ public class DocumentoServiceImpl implements DocumentoService {
 		try {
 			Files.copy(documentoFile.getInputStream(), pathUpload.resolve(documentoNome), StandardCopyOption.REPLACE_EXISTING);
 			
-			documentoFoto.setCliente(cliente);
-			documentoFoto.setDocumentoNome(documentoNome);
-			documentoFoto.setDocumentoTipo(documentoFile.getContentType());
-			documentoFoto.setDocumentoData(documentoFile.getBytes());
+			documento.setDocumentoNome(documentoNome);
+			documento.setDocumentoTipo(documentoFile.getContentType());
+			documento.setDocumentoData(documentoFile.getBytes());
+			documento.setCliente(cliente);
 		} catch (IOException e) {
 			throw new RuntimeException("Erro ao salvar o documento");
 		}
 		
-		documentoRepository.save(documentoFoto);
+		documentoRepository.save(documento);
 		
-		clienteService.atualizarDocumentoCliente(cliente, documentoFoto);
+		clienteService.atualizarDocumentoCliente(cliente, documento);
 		
-		return documentoFoto;
+		return documento;
 	}
 
 }

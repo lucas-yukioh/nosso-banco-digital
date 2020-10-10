@@ -92,6 +92,17 @@ public class PropostaController {
 		return ResponseEntity.ok(response);
 	}
 	
+	@PostMapping("/{id}/criar-conta")
+	public ResponseEntity<Conta> criarConta(@PathVariable("id") long propostaId) {
+		Proposta proposta = propostaService.buscarPropostaCompletaPorId(propostaId);
+		Conta conta = contaService.criarConta(propostaId);
+		
+		SimpleMailMessage emailMessage = ContaMail.dadosContaMail(conta, proposta.getCliente().getEmail());
+		mailSender.send(emailMessage);
+		
+		return ResponseEntity.status(HttpStatus.CREATED).body(conta);
+	}
+	
 	@GetMapping("/{id}/emails")
 	public ResponseEntity<Object> buscarEmails(@PathVariable("id") long propostaId) {
 		Proposta proposta = propostaService.buscarPropostaCompletaPorId(propostaId);
@@ -102,17 +113,6 @@ public class PropostaController {
 		Object result = restTemplate.getForObject(uri, Object.class);
 		
 		return ResponseEntity.status(HttpStatus.FOUND).body(result);
-	}
-	
-	@PostMapping("/{id}/criar-conta")
-	public ResponseEntity<Conta> criarConta(@PathVariable("id") long propostaId) {
-		Proposta proposta = propostaService.buscarPropostaCompletaPorId(propostaId);
-		Conta conta = contaService.criarConta(propostaId);
-		
-		SimpleMailMessage emailMessage = ContaMail.dadosContaMail(conta, proposta.getCliente().getEmail());
-		mailSender.send(emailMessage);
-		
-		return ResponseEntity.status(HttpStatus.CREATED).body(conta);
 	}
 
 }

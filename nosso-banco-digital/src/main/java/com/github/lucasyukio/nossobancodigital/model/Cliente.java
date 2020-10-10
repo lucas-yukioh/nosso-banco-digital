@@ -2,6 +2,7 @@ package com.github.lucasyukio.nossobancodigital.model;
 
 import java.time.LocalDate;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -15,6 +16,7 @@ import javax.validation.constraints.Size;
 
 import org.hibernate.validator.constraints.br.CPF;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
@@ -50,22 +52,22 @@ public class Cliente {
 	private String cpf;
 	
 	@NotNull(message = "Data de Nascimento é obrigatório")
+	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy")
 	@Idade
 	private LocalDate dataNascimento;
 	
-	@OneToOne
-	@JoinColumn(name = "proposta_id")
-	@JsonIgnoreProperties("cliente")
-	private Proposta proposta;
-	
-	@OneToOne
+	@OneToOne(cascade = CascadeType.REMOVE)
 	@JoinColumn(name = "endereco_id")
 	@JsonIgnoreProperties("cliente")
 	private Endereco endereco;
 	
-	@OneToOne
+	@OneToOne(cascade = CascadeType.REMOVE)
 	@JoinColumn(name = "documento_id")
 	@JsonIgnoreProperties("cliente")
 	private Documento documento;
+	
+	@OneToOne(mappedBy = "cliente")
+	@JsonIgnoreProperties("cliente")
+	private Proposta proposta;
 	
 }

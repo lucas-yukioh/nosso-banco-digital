@@ -10,7 +10,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.OneToOne;
-import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.Digits;
 
 import lombok.Data;
 
@@ -24,7 +24,7 @@ public class Token {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private long id;
 	
-	@NotBlank(message = "Token é obrigatório")
+	@Digits(integer = 6, fraction = 0)
 	private int token;
 	
 	private Date dataExpiracao;

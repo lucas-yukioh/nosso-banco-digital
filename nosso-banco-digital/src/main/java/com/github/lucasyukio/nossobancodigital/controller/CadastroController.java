@@ -64,7 +64,7 @@ public class CadastroController {
 	@PostMapping("/{id}/documento")
 	public ResponseEntity<Documento> salvarDocumento(@RequestParam("documento") MultipartFile documentoFile, 
 												     @PathVariable("id") long propostaId, UriComponentsBuilder b) {
-		Documento documentoFotoNovo = documentoFotoService.salvarDocumentoFoto(propostaId, documentoFile);
+		Documento documentoFotoNovo = documentoFotoService.salvarDocumento(propostaId, documentoFile);
 		
 		if (!liberarDocumentoSistemaExterno(propostaId)) {
 			try {

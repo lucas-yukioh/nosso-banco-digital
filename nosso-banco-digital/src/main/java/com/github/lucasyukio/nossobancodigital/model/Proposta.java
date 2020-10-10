@@ -1,5 +1,6 @@
 package com.github.lucasyukio.nossobancodigital.model;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -29,13 +30,14 @@ public class Proposta {
 	@NotNull(message = "Status de liberada é obrigatório")
 	private boolean liberada;
 	
-	@OneToOne(mappedBy = "proposta")
+	@OneToOne(cascade = CascadeType.REMOVE)
+	@JoinColumn(name = "cliente_id")
 	@JsonIgnoreProperties("proposta")
 	private Cliente cliente;
 	
-	@OneToOne
+	@OneToOne(cascade = CascadeType.REMOVE)
 	@JoinColumn(name = "conta_id")
-	@JsonIgnoreProperties("cliente")
+	@JsonIgnoreProperties("proposta")
 	private Conta conta;
 	
 	public Proposta() {

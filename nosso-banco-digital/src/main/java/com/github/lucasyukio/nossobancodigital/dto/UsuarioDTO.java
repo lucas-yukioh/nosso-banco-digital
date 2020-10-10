@@ -1,5 +1,6 @@
 package com.github.lucasyukio.nossobancodigital.dto;
 
+import javax.validation.constraints.Digits;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
 
@@ -29,7 +30,7 @@ public class UsuarioDTO {
 	@NotBlank(message = "Confirmação de Senha é obrigatório")
 	private String confirmaSenha;
 	
-	@NotBlank(message = "Token é obrigatório")
+	@Digits(integer = 6, fraction = 0)
 	private int token;
 
 }

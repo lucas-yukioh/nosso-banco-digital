@@ -40,7 +40,6 @@ public class ClienteServiceImpl implements ClienteService {
 		clienteNovo.setEmail(clienteDTO.getEmail());
 		clienteNovo.setCpf(clienteDTO.getCpf());
 		clienteNovo.setDataNascimento(clienteDTO.getDataNascimento());
-		clienteNovo.setProposta(proposta);
 		
 		clienteRepository.save(clienteNovo);
 		

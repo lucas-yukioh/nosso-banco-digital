@@ -9,6 +9,7 @@ import javax.validation.constraints.Size;
 
 import org.hibernate.validator.constraints.br.CPF;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.github.lucasyukio.nossobancodigital.validator.CPFUnico;
 import com.github.lucasyukio.nossobancodigital.validator.EmailUnico;
 import com.github.lucasyukio.nossobancodigital.validator.Idade;
@@ -39,6 +40,7 @@ public class ClienteDTO {
 	private String cpf;
 	
 	@NotNull(message = "Data de Nascimento é obrigatório")
+	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy")
 	@Idade
 	private LocalDate dataNascimento;
 	

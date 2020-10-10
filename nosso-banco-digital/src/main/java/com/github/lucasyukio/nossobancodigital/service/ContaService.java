@@ -6,4 +6,8 @@ public interface ContaService {
 
 	Conta criarConta(long propostaId);
 	
+	Conta buscarContaPorAgenciaEConta(int agencia, int conta);
+	
+	void atualizarSaldoConta(Conta conta, double valor);
+	
 }
