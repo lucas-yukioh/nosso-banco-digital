@@ -20,13 +20,9 @@ public class ContaServiceImpl implements ContaService {
 	
 	@Override
 	public Conta criarConta(long propostaId) {
-		Proposta proposta = propostaService.buscarPropostaPorId(propostaId);
+		Proposta proposta = propostaService.buscarPropostaCompletaAceitaLiberadaPorId(propostaId);
 		
-		if (!proposta.isAceita())
-			throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "Proposta não aceita pelo Cliente");
-		else if (!proposta.isLiberada())
-			throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "Proposta não liberada pelo sistema externo");
-		else if (proposta.getConta() != null)
+		if (proposta.getConta() != null)
 			throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "Proposta já possui Conta cadastrada");
 		
 		Conta conta = new Conta();

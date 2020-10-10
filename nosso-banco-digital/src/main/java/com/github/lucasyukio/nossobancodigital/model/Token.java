@@ -3,7 +3,6 @@ package com.github.lucasyukio.nossobancodigital.model;
 import java.sql.Timestamp;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.Random;
 
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -11,6 +10,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.OneToOne;
+import javax.validation.constraints.NotBlank;
 
 import lombok.Data;
 
@@ -24,13 +24,16 @@ public class Token {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private long id;
 	
+	@NotBlank(message = "Token é obrigatório")
 	private int token;
+	
+	private Date dataExpiracao;
+	
+	private boolean usado;
 	
 	@OneToOne
 	@JoinColumn(name = "cliente_id")
-	private Usuario usuario;
-	
-	private Date dataExpiracao;
+	private Cliente cliente;
 	
 	private Date calcularDataExpiracao() {
 		Calendar cal = Calendar.getInstance();
@@ -41,7 +44,7 @@ public class Token {
 	}
 	
 	public Token() {
-		token = 100000 + new Random().nextInt(900000);
+		usado = false;
 		dataExpiracao = calcularDataExpiracao();
 	}
 

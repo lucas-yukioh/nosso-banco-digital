@@ -19,11 +19,6 @@ import lombok.Data;
 @JsonInclude(Include.NON_NULL)
 public class Proposta {
 	
-	public Proposta() {
-		aceita = false;
-		liberada = false;
-	}
-	
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private long id;
@@ -42,5 +37,10 @@ public class Proposta {
 	@JoinColumn(name = "conta_id")
 	@JsonIgnoreProperties("cliente")
 	private Conta conta;
+	
+	public Proposta() {
+		aceita = false;
+		liberada = false;
+	}
 
 }

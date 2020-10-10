@@ -1,10 +1,17 @@
 package com.github.lucasyukio.nossobancodigital.service;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
+import java.util.Calendar;
+import java.util.Optional;
+import java.util.Random;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
+
+import com.github.lucasyukio.nossobancodigital.model.Cliente;
+import com.github.lucasyukio.nossobancodigital.model.Proposta;
 import com.github.lucasyukio.nossobancodigital.model.Token;
-import com.github.lucasyukio.nossobancodigital.model.Usuario;
 import com.github.lucasyukio.nossobancodigital.repository.TokenRepository;
 
 @Service
@@ -12,12 +19,67 @@ public class TokenServiceImpl implements TokenService {
 	
 	@Autowired
 	TokenRepository tokenRepository;
+	
+	@Autowired
+	ClienteService clienteService;
+	
+	@Autowired
+	PropostaService propostaService;
 
 	@Override
-	public Token criarToken(Usuario usuario) {
-		Token token = new Token();
+	public Token gerarToken(String cpf, String email) {
+		Cliente cliente = clienteService.buscarClientePorCpfEEmail(cpf, email);
+		Proposta proposta = propostaService.buscarPropostaCompletaAceitaLiberadaPorId(cliente.getProposta().getId());
 		
-		token.setUsuario(usuario);
+		if (proposta.getConta() == null)
+			throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "Proposta associada a esse Cliente não possui Conta cadastrada");
+		
+		Token tokenObj = new Token();
+		
+		int token = 100000 + new Random().nextInt(900000);
+		
+		while(tokenRepository.findByToken(token).isPresent())
+			token = 100000 + new Random().nextInt(900000);
+		
+		tokenObj.setToken(token);
+		tokenObj.setCliente(cliente);
+		
+		tokenRepository.save(tokenObj);
+		
+		return tokenObj;
+	}
+	
+	@Override
+	public Token buscarTokenValido(int token) {
+		Token tokenObj = buscarTokenPorToken(token);
+		
+		Calendar cal = Calendar.getInstance();
+		
+		if ((tokenObj.getDataExpiracao().getTime() - cal.getTime().getTime()) <= 0)
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Token expirado");
+		else if (tokenObj.isUsado())
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Token já foi utilizado");
+		
+		return tokenObj;
+	}
+	
+	@Override
+	public Token buscarTokenPorToken(int token) {
+		Optional<Token> tokenOpt = tokenRepository.findByToken(token);
+		
+		return tokenOpt.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Token não encontrado"));
+	}
+	
+	@Override
+	public Token buscarTokenPorCliente(Cliente cliente) {
+		Optional<Token> tokenOpt = tokenRepository.findByCliente(cliente);
+		
+		return tokenOpt.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Token não encontrado"));
+	}
+	
+	@Override
+	public Token atualizarUsadoToken(Token token, boolean usado) {
+		token.setUsado(usado);
 		
 		tokenRepository.save(token);
 		

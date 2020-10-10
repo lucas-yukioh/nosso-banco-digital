@@ -12,6 +12,12 @@ public interface PropostaService {
 	
 	Proposta buscarPropostaCompletaPorId(long id);
 	
+	Proposta buscarPropostaCompletaNAceitaPorId(long id);
+	
+	Proposta buscarPropostaCompletaNLiberadaPorId(long id);
+	
+	Proposta buscarPropostaCompletaAceitaLiberadaPorId(long id);
+	
 	Proposta atualizarClienteProposta(Proposta proposta, Cliente cliente);
 	
 	Proposta atualizarAceitarProposta(Proposta proposta, boolean aceita);

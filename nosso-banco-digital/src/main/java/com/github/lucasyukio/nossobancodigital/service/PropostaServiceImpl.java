@@ -48,6 +48,38 @@ public class PropostaServiceImpl implements PropostaService {
 	}
 	
 	@Override
+	public Proposta buscarPropostaCompletaNAceitaPorId(long id) {
+		Proposta proposta = buscarPropostaCompletaPorId(id);
+		
+		if (proposta.isAceita())
+			throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "Proposta já aceita pelo Cliente");
+		
+		return proposta;
+	}
+	
+	@Override
+	public Proposta buscarPropostaCompletaNLiberadaPorId(long id) {
+		Proposta proposta = buscarPropostaCompletaPorId(id);
+		
+		if (proposta.isLiberada())
+			throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "Proposta já liberada pelo Sistema Externo");
+		
+		return proposta;
+	}
+	
+	@Override
+	public Proposta buscarPropostaCompletaAceitaLiberadaPorId(long id) {
+		Proposta proposta = buscarPropostaCompletaPorId(id);
+		
+		if (!proposta.isAceita())
+			throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "Proposta não aceita pelo Cliente");
+		else if (!proposta.isLiberada())
+			throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "Proposta não liberada pelo Sistema Externo");
+		
+		return proposta;
+	}
+	
+	@Override
 	public Proposta atualizarClienteProposta(Proposta proposta, Cliente cliente) {
 		proposta.setCliente(cliente);
 		
@@ -58,9 +90,6 @@ public class PropostaServiceImpl implements PropostaService {
 
 	@Override
 	public Proposta atualizarAceitarProposta(Proposta proposta, boolean aceita) {
-		if (proposta.isAceita())
-			throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "Proposta já foi aceita");
-		
 		proposta.setAceita(aceita);
 		
 		propostaRepository.save(proposta);
@@ -70,9 +99,6 @@ public class PropostaServiceImpl implements PropostaService {
 
 	@Override
 	public Proposta atualizarLiberarProposta(Proposta proposta, boolean liberada) {
-		if (proposta.isLiberada())
-			throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "Proposta já foi liberada");
-		
 		proposta.setLiberada(liberada);
 		
 		propostaRepository.save(proposta);

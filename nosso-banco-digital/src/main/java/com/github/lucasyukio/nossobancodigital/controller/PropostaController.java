@@ -44,8 +44,8 @@ public class PropostaController {
 	@PostMapping
 	public ResponseEntity<ResponseMessage> criarProposta(UriComponentsBuilder b) {
 		Proposta propostaNova = propostaService.criarProposta();
-		ResponseMessage response = new ResponseMessage();
 		
+		ResponseMessage response = new ResponseMessage();
 		response.setMessage("Proposta criada com sucesso");
 		
 		UriComponents uriComponents = b.path("/cadastro/{id}/cliente").buildAndExpand(propostaNova.getId());
@@ -62,14 +62,11 @@ public class PropostaController {
 	
 	@PostMapping("/{id}/aceitar-proposta")
 	public ResponseEntity<ResponseMessage> aceitarProposta(@RequestParam("aceita") boolean aceita, @PathVariable("id") long propostaId, UriComponentsBuilder b) {
-		Proposta proposta = propostaService.buscarPropostaCompletaPorId(propostaId);
-		
-		UriComponents uriComponents = b.path("/proposta/{id}/criar-conta").buildAndExpand(propostaId);
-		
-		ResponseMessage response = new ResponseMessage();
+		Proposta proposta = propostaService.buscarPropostaCompletaNAceitaPorId(propostaId);
 		Cliente cliente = proposta.getCliente();
 		
 		SimpleMailMessage emailMessage = PropostaMail.aceitarMail(aceita, cliente.getEmail());
+		ResponseMessage response = new ResponseMessage();
 		
 		if (aceita) {
 			propostaService.atualizarAceitarProposta(proposta, true);
@@ -81,16 +78,15 @@ public class PropostaController {
 		
 		mailSender.send(emailMessage);
 		
-		return ResponseEntity.status(HttpStatus.FOUND).location(uriComponents.toUri()).body(response);
+		return ResponseEntity.ok(response);
 	}
 	
 	@PostMapping("/{id}/liberar-proposta")
 	public ResponseEntity<ResponseMessage> liberarProposta(@PathVariable("id") long propostaId, UriComponentsBuilder b) {
-		Proposta proposta = propostaService.buscarPropostaCompletaPorId(propostaId);
-		ResponseMessage response = new ResponseMessage();
-		
+		Proposta proposta = propostaService.buscarPropostaCompletaNLiberadaPorId(propostaId);
 		propostaService.atualizarLiberarProposta(proposta, true);
 		
+		ResponseMessage response = new ResponseMessage();
 		response.setMessage("Proposta liberada com sucesso");
 		
 		return ResponseEntity.ok(response);
@@ -111,7 +107,6 @@ public class PropostaController {
 	@PostMapping("/{id}/criar-conta")
 	public ResponseEntity<Conta> criarConta(@PathVariable("id") long propostaId) {
 		Proposta proposta = propostaService.buscarPropostaCompletaPorId(propostaId);
-		
 		Conta conta = contaService.criarConta(propostaId);
 		
 		SimpleMailMessage emailMessage = ContaMail.dadosContaMail(conta, proposta.getCliente().getEmail());

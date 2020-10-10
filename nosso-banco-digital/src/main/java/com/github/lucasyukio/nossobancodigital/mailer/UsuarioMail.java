@@ -9,8 +9,19 @@ public class UsuarioMail {
 		
 		emailMessage.setFrom("email-veridico@banco-digital.com");
 		emailMessage.setTo(clienteEmail);
-		emailMessage.setSubject("Acesso o link para criar sua senha!");
-		emailMessage.setText("Acesse o link [inserir-link] para criar sua senha e acessar sua conta! ");
+		emailMessage.setSubject("Token para criação da conta!");
+		emailMessage.setText("Seu token é: " + token);
+		
+		return emailMessage;
+	}
+	
+	public static SimpleMailMessage usuarioSenhaMail(String clienteEmail) {
+		SimpleMailMessage emailMessage = new SimpleMailMessage();
+		
+		emailMessage.setFrom("email-veridico@banco-digital.com");
+		emailMessage.setTo(clienteEmail);
+		emailMessage.setSubject("Seu usuário foi criado!");
+		emailMessage.setText("Parabéns! Agora você tem acesso a sua conta através do seu usuário e senha recém criados!");
 		
 		return emailMessage;
 	}
