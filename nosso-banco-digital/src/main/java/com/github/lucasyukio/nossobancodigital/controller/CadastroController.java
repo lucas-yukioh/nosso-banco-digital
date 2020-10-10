@@ -41,7 +41,7 @@ public class CadastroController {
 	EnderecoService enderecoService;
 	
 	@Autowired
-	DocumentoService documentoFotoService;
+	DocumentoService documentoService;
 	
 	@PostMapping("/{id}/cliente")
 	public ResponseEntity<Cliente> salvarCliente(@RequestBody @Valid ClienteDTO clienteDTO, @PathVariable("id") long propostaId, UriComponentsBuilder b) {
@@ -64,7 +64,7 @@ public class CadastroController {
 	@PostMapping("/{id}/documento")
 	public ResponseEntity<Documento> salvarDocumento(@RequestParam("documento") MultipartFile documentoFile, 
 												     @PathVariable("id") long propostaId, UriComponentsBuilder b) {
-		Documento documentoFotoNovo = documentoFotoService.salvarDocumento(propostaId, documentoFile);
+		Documento documentoNovo = documentoService.salvarDocumento(propostaId, documentoFile);
 		
 		if (!liberarDocumentoSistemaExterno(propostaId)) {
 			try {
@@ -77,7 +77,7 @@ public class CadastroController {
 		
 		UriComponents uriComponents = b.path("/proposta/{id}").buildAndExpand(propostaId);
 		
-		return ResponseEntity.created(uriComponents.toUri()).body(documentoFotoNovo);
+		return ResponseEntity.created(uriComponents.toUri()).body(documentoNovo);
 	}
 	
 	private boolean liberarDocumentoSistemaExterno(long propostaId) {
