@@ -64,8 +64,8 @@ public class Cliente {
 	private Endereco endereco;
 	
 	@OneToOne
-	@JoinColumn(name = "documento_foto_id")
+	@JoinColumn(name = "documento_id")
 	@JsonIgnoreProperties("cliente")
-	private DocumentoFoto documentoFoto;
+	private Documento documento;
 	
 }

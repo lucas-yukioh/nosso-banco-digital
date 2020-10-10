@@ -25,9 +25,6 @@ public class PropostaServiceImpl implements PropostaService {
 	public Proposta criarProposta() {
 		Proposta propostaNova = new Proposta();
 		
-		propostaNova.setAceita(false);
-		propostaNova.setLiberada(false);
-		
 		propostaRepository.save(propostaNova);
 		
 		return propostaNova;
@@ -41,6 +38,16 @@ public class PropostaServiceImpl implements PropostaService {
 	}
 	
 	@Override
+	public Proposta buscarPropostaCompletaPorId(long id) {
+		Proposta proposta = buscarPropostaPorId(id);
+		
+		if (proposta.getCliente() == null || proposta.getCliente().getEndereco() == null || proposta.getCliente().getDocumento() == null)
+			throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "Proposta não possui todos os dados do Cliente");
+		
+		return proposta;
+	}
+	
+	@Override
 	public Proposta atualizarClienteProposta(Proposta proposta, Cliente cliente) {
 		proposta.setCliente(cliente);
 		
@@ -51,6 +58,9 @@ public class PropostaServiceImpl implements PropostaService {
 
 	@Override
 	public Proposta atualizarAceitarProposta(Proposta proposta, boolean aceita) {
+		if (proposta.isAceita())
+			throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "Proposta já foi aceita");
+		
 		proposta.setAceita(aceita);
 		
 		propostaRepository.save(proposta);
@@ -60,6 +70,9 @@ public class PropostaServiceImpl implements PropostaService {
 
 	@Override
 	public Proposta atualizarLiberarProposta(Proposta proposta, boolean liberada) {
+		if (proposta.isLiberada())
+			throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "Proposta já foi liberada");
+		
 		proposta.setLiberada(liberada);
 		
 		propostaRepository.save(proposta);

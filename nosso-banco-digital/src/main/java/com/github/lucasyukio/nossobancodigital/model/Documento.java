@@ -15,7 +15,7 @@ import lombok.Data;
 
 @Data
 @Entity
-public class DocumentoFoto {
+public class Documento {
 	
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -30,8 +30,8 @@ public class DocumentoFoto {
 	@JsonIgnore
 	private byte[] documentoData;
 	
-	@OneToOne(mappedBy = "documentoFoto")
-	@JsonIgnoreProperties("documentoFoto")
+	@OneToOne(mappedBy = "documento")
+	@JsonIgnoreProperties("documento")
 	private Cliente cliente;
 
 }

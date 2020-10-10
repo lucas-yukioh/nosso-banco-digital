@@ -13,7 +13,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -21,11 +20,10 @@ import com.github.lucasyukio.nossobancodigital.dto.ClienteDTO;
 import com.github.lucasyukio.nossobancodigital.dto.EnderecoDTO;
 import com.github.lucasyukio.nossobancodigital.message.ResponseMessage;
 import com.github.lucasyukio.nossobancodigital.model.Cliente;
-import com.github.lucasyukio.nossobancodigital.model.DocumentoFoto;
+import com.github.lucasyukio.nossobancodigital.model.Documento;
 import com.github.lucasyukio.nossobancodigital.model.Endereco;
-import com.github.lucasyukio.nossobancodigital.model.Proposta;
 import com.github.lucasyukio.nossobancodigital.service.ClienteService;
-import com.github.lucasyukio.nossobancodigital.service.DocumentoFotoService;
+import com.github.lucasyukio.nossobancodigital.service.DocumentoService;
 import com.github.lucasyukio.nossobancodigital.service.EnderecoService;
 import com.github.lucasyukio.nossobancodigital.service.PropostaService;
 
@@ -43,16 +41,11 @@ public class CadastroController {
 	EnderecoService enderecoService;
 	
 	@Autowired
-	DocumentoFotoService documentoFotoService;
+	DocumentoService documentoFotoService;
 	
 	@PostMapping("/{id}/cliente")
 	public ResponseEntity<Cliente> salvarCliente(@RequestBody @Valid ClienteDTO clienteDTO, @PathVariable("id") long propostaId, UriComponentsBuilder b) {
-		Proposta proposta = propostaService.buscarPropostaPorId(propostaId);
-		
-		if (proposta.getCliente() != null)
-			throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "Proposta já possui Cliente cadastrado");
-		
-		Cliente clienteNovo = clienteService.salvarCliente(clienteDTO, propostaId);
+		Cliente clienteNovo = clienteService.salvarCliente(propostaId, clienteDTO);
 		
 		UriComponents uriComponents = b.path("/cadastro/{id}/endereco").buildAndExpand(propostaId);
 		
@@ -61,17 +54,7 @@ public class CadastroController {
 	
 	@PostMapping("/{id}/endereco")
 	public ResponseEntity<Endereco> salvarEndereco(@RequestBody @Valid EnderecoDTO enderecoDTO, @PathVariable("id") long propostaId, UriComponentsBuilder b) {
-		Proposta proposta = propostaService.buscarPropostaPorId(propostaId);
-		
-		if (proposta.getCliente() == null)
-			throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "Proposta não possui todos os dados do Cliente");
-		
-		Cliente cliente = proposta.getCliente();
-		
-		if (cliente.getEndereco() != null)
-			throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "Cliente já possui Endereço cadastrado");
-		
-		Endereco enderecoNovo = enderecoService.salvarEndereco(cliente.getId(), enderecoDTO);
+		Endereco enderecoNovo = enderecoService.salvarEndereco(propostaId, enderecoDTO);
 		
 		UriComponents uriComponents = b.path("/cadastro/{id}/documento").buildAndExpand(propostaId);
 		
@@ -79,21 +62,9 @@ public class CadastroController {
 	}
 	
 	@PostMapping("/{id}/documento")
-	public ResponseEntity<DocumentoFoto> salvarDocumento(@RequestParam("documento") MultipartFile documentoFile, 
-														 @PathVariable("id") long propostaId, UriComponentsBuilder b) {
-		Proposta proposta = propostaService.buscarPropostaPorId(propostaId);
-		
-		if (proposta.getCliente() == null || proposta.getCliente().getEndereco() == null)
-			throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "Proposta não possui todos os dados do Cliente");
-		
-		documentoFotoService.criarDiretorio(propostaId);
-		
-		Cliente cliente = proposta.getCliente();
-		
-		if (cliente.getDocumentoFoto() != null)
-			throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "Cliente já possui Documento cadastrado");
-		
-		DocumentoFoto documentoFotoNovo = documentoFotoService.salvarDocumentoFoto(cliente.getId(), documentoFile);
+	public ResponseEntity<Documento> salvarDocumento(@RequestParam("documento") MultipartFile documentoFile, 
+												     @PathVariable("id") long propostaId, UriComponentsBuilder b) {
+		Documento documentoFotoNovo = documentoFotoService.salvarDocumentoFoto(propostaId, documentoFile);
 		
 		if (!liberarDocumentoSistemaExterno(propostaId)) {
 			try {

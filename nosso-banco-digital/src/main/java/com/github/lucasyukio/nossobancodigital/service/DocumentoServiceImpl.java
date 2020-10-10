@@ -8,19 +8,25 @@ import java.nio.file.StandardCopyOption;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.server.ResponseStatusException;
 
 import com.github.lucasyukio.nossobancodigital.model.Cliente;
-import com.github.lucasyukio.nossobancodigital.model.DocumentoFoto;
-import com.github.lucasyukio.nossobancodigital.repository.DocumentoFotoRepository;
+import com.github.lucasyukio.nossobancodigital.model.Documento;
+import com.github.lucasyukio.nossobancodigital.model.Proposta;
+import com.github.lucasyukio.nossobancodigital.repository.DocumentoRepository;
 
 @Service
-public class DocumentoFotoServiceImpl implements DocumentoFotoService {
+public class DocumentoServiceImpl implements DocumentoService {
 	
 	@Autowired
-	DocumentoFotoRepository documentoFotoRepository;
+	DocumentoRepository documentoRepository;
+	
+	@Autowired
+	PropostaService propostaService;
 	
 	@Autowired
 	ClienteService clienteService;
@@ -41,15 +47,24 @@ public class DocumentoFotoServiceImpl implements DocumentoFotoService {
 	}
 	
 	@Override
-	public DocumentoFoto salvarDocumentoFoto(long clienteId, MultipartFile documentoFile) {
-		Cliente cliente = clienteService.buscarClientePorId(clienteId);
-		DocumentoFoto documentoFoto = new DocumentoFoto();
+	public Documento salvarDocumentoFoto(long propostaId, MultipartFile documentoFile) {
+		Proposta proposta = propostaService.buscarPropostaPorId(propostaId);
+		Cliente cliente = proposta.getCliente();
+		
+		if (cliente == null || cliente.getEndereco() == null)
+			throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "Proposta não possui todos os dados do Cliente");
+		else if (cliente.getDocumento() != null)
+			throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "Cliente já possui Documento cadastrado");
+		
+		criarDiretorio(propostaId);
+		
+		Documento documentoFoto = new Documento();
 		
 		Path pathUpload = Paths.get(uploadDir + cliente.getProposta().getId());
 		
 		String originalNome = StringUtils.cleanPath(documentoFile.getOriginalFilename());
 		String extensaoArq = originalNome.substring(originalNome.lastIndexOf("."));
-		String documentoNome = "cliente_" + clienteId + "_documento" + extensaoArq;
+		String documentoNome = "cliente_" + cliente.getId() + "_documento" + extensaoArq;
 		
 		try {
 			Files.copy(documentoFile.getInputStream(), pathUpload.resolve(documentoNome), StandardCopyOption.REPLACE_EXISTING);
@@ -62,9 +77,9 @@ public class DocumentoFotoServiceImpl implements DocumentoFotoService {
 			throw new RuntimeException("Erro ao salvar o documento");
 		}
 		
-		documentoFotoRepository.save(documentoFoto);
+		documentoRepository.save(documentoFoto);
 		
-		clienteService.atualizarDocumentoFotoCliente(cliente, documentoFoto);
+		clienteService.atualizarDocumentoCliente(cliente, documentoFoto);
 		
 		return documentoFoto;
 	}

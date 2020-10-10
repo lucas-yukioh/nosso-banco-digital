@@ -12,7 +12,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
-import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -56,22 +55,14 @@ public class PropostaController {
 	
 	@GetMapping("/{id}")
 	public ResponseEntity<Proposta> exibirProposta(@PathVariable("id") long propostaId) {
-		Proposta proposta = propostaService.buscarPropostaPorId(propostaId);
-		
-		if (propostaIncompleta(proposta))
-			throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "Proposta não possui todos os dados do Cliente");
+		Proposta proposta = propostaService.buscarPropostaCompletaPorId(propostaId);
 		
 		return ResponseEntity.status(HttpStatus.FOUND).body(proposta);
 	}
 	
 	@PostMapping("/{id}/aceitar-proposta")
 	public ResponseEntity<ResponseMessage> aceitarProposta(@RequestParam("aceita") boolean aceita, @PathVariable("id") long propostaId, UriComponentsBuilder b) {
-		Proposta proposta = propostaService.buscarPropostaPorId(propostaId);
-		
-		if (propostaIncompleta(proposta))
-			throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "Proposta não possui todos os dados do Cliente");
-		else if (proposta.isAceita())
-			throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "Proposta já foi aceita");
+		Proposta proposta = propostaService.buscarPropostaCompletaPorId(propostaId);
 		
 		UriComponents uriComponents = b.path("/proposta/{id}/criar-conta").buildAndExpand(propostaId);
 		
@@ -95,13 +86,8 @@ public class PropostaController {
 	
 	@PostMapping("/{id}/liberar-proposta")
 	public ResponseEntity<ResponseMessage> liberarProposta(@PathVariable("id") long propostaId, UriComponentsBuilder b) {
-		Proposta proposta = propostaService.buscarPropostaPorId(propostaId);
+		Proposta proposta = propostaService.buscarPropostaCompletaPorId(propostaId);
 		ResponseMessage response = new ResponseMessage();
-		
-		if (propostaIncompleta(proposta))
-			throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "Proposta não possui todos os dados do Cliente");
-		else if (proposta.isLiberada())
-			throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "Proposta já foi liberada");
 		
 		propostaService.atualizarLiberarProposta(proposta, true);
 		
@@ -112,10 +98,7 @@ public class PropostaController {
 	
 	@GetMapping("/{id}/emails")
 	public ResponseEntity<Object> buscarEmails(@PathVariable("id") long propostaId) {
-		Proposta proposta = propostaService.buscarPropostaPorId(propostaId);
-		
-		if (propostaIncompleta(proposta))
-			throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "Proposta não possui todos os dados do Cliente");
+		Proposta proposta = propostaService.buscarPropostaCompletaPorId(propostaId);
 		
 		String uri = "https://api.smtpbucket.com/emails?sender=email-veridico@banco-digital.com&recipient=" + proposta.getCliente().getEmail();
 		
@@ -127,16 +110,7 @@ public class PropostaController {
 	
 	@PostMapping("/{id}/criar-conta")
 	public ResponseEntity<Conta> criarConta(@PathVariable("id") long propostaId) {
-		Proposta proposta = propostaService.buscarPropostaPorId(propostaId);
-		
-		if (propostaIncompleta(proposta))
-			throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "Proposta não possui todos os dados do Cliente");
-		else if (!proposta.isAceita())
-			throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "Proposta não aceita pelo Cliente");
-		else if (!proposta.isLiberada())
-			throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "Proposta não liberada pelo sistema externo");
-		else if (proposta.getConta() != null)
-			throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "Proposta já possui Conta cadastrada");
+		Proposta proposta = propostaService.buscarPropostaCompletaPorId(propostaId);
 		
 		Conta conta = contaService.criarConta(propostaId);
 		
@@ -144,10 +118,6 @@ public class PropostaController {
 		mailSender.send(emailMessage);
 		
 		return ResponseEntity.status(HttpStatus.CREATED).body(conta);
-	}
-	
-	private boolean propostaIncompleta(Proposta proposta) {
-		return proposta.getCliente() == null || proposta.getCliente().getEndereco() == null || proposta.getCliente().getDocumentoFoto() == null;
 	}
 
 }

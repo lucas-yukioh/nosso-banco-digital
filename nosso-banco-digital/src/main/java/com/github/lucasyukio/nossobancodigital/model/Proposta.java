@@ -9,12 +9,20 @@ import javax.persistence.OneToOne;
 import javax.validation.constraints.NotNull;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
 import lombok.Data;
 
 @Data
 @Entity
+@JsonInclude(Include.NON_NULL)
 public class Proposta {
+	
+	public Proposta() {
+		aceita = false;
+		liberada = false;
+	}
 	
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)

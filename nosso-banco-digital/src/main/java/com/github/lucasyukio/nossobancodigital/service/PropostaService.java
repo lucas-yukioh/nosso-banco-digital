@@ -10,6 +10,8 @@ public interface PropostaService {
 	
 	Proposta buscarPropostaPorId(long id);
 	
+	Proposta buscarPropostaCompletaPorId(long id);
+	
 	Proposta atualizarClienteProposta(Proposta proposta, Cliente cliente);
 	
 	Proposta atualizarAceitarProposta(Proposta proposta, boolean aceita);

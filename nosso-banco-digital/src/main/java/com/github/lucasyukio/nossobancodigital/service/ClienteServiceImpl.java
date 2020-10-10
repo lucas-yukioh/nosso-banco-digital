@@ -9,7 +9,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import com.github.lucasyukio.nossobancodigital.dto.ClienteDTO;
 import com.github.lucasyukio.nossobancodigital.model.Cliente;
-import com.github.lucasyukio.nossobancodigital.model.DocumentoFoto;
+import com.github.lucasyukio.nossobancodigital.model.Documento;
 import com.github.lucasyukio.nossobancodigital.model.Endereco;
 import com.github.lucasyukio.nossobancodigital.model.Proposta;
 import com.github.lucasyukio.nossobancodigital.repository.ClienteRepository;
@@ -24,11 +24,13 @@ public class ClienteServiceImpl implements ClienteService {
 	PropostaService propostaService;
 	
 	@Override
-	public Cliente salvarCliente(ClienteDTO clienteDTO, long propostaId) {
+	public Cliente salvarCliente(long propostaId, ClienteDTO clienteDTO) {
 		Cliente clienteNovo = new Cliente();
 		Proposta proposta = propostaService.buscarPropostaPorId(propostaId);
 		
-		if (clienteRepository.findByCpf(clienteDTO.getCpf()).isPresent())
+		if (proposta.getCliente() != null)
+			throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "Proposta já possui Cliente cadastrado");
+		else if (clienteRepository.findByCpf(clienteDTO.getCpf()).isPresent())
 			throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "CPF já cadastrado no sistema");
 		else if (clienteRepository.findByEmail(clienteDTO.getEmail()).isPresent())
 			throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "Email já cadastrado no sistema");
@@ -57,17 +59,8 @@ public class ClienteServiceImpl implements ClienteService {
 	}
 	
 	@Override
-	public Cliente atualizarDocumentoFotoCliente(Cliente cliente, DocumentoFoto documentoFoto) {
-		cliente.setDocumentoFoto(documentoFoto);
-		
-		clienteRepository.save(cliente);
-		
-		return cliente;
-	}
-	
-	@Override
-	public Cliente atualizarPropostaCliente(Cliente cliente, Proposta proposta) {
-		cliente.setProposta(proposta);
+	public Cliente atualizarDocumentoCliente(Cliente cliente, Documento documento) {
+		cliente.setDocumento(documento);
 		
 		clienteRepository.save(cliente);
 		
